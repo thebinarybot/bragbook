@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brag Book ✨</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>Brag Book</h1>
+            <div class="controls">
+                <button id="theme-toggle">🌙</button>
+                <button id="view-toggle">📊 Analytics</button>
+            </div>
+        </header>
+
+        <main id="main-view" class="view active">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button id="prev-month">&lt;</button>
+                    <h2 id="month-year">Month Year</h2>
+                    <button id="next-month">&gt;</button>
+                </div>
+                <div class="calendar-grid" id="calendar-grid">
+                    </div>
+            </div>
+
+            <div class="add-brag-container">
+                <h2>Add a Brag</h2>
+                <form id="add-brag-form">
+                    <input type="hidden" id="brag-date" value="">
+                    <p>For: <strong id="selected-date-display">Today</strong></p>
+                    <textarea id="brag-text" placeholder="What awesome thing happened?" required></textarea>
+                    <div class="brag-level">
+                        <label>Level:</label>
+                        <input type="radio" id="level-max" name="brag-level" value="max" required>
+                        <label for="level-max" class="level-label max">Max ✨</label>
+                        <input type="radio" id="level-avg" name="brag-level" value="avg" checked>
+                        <label for="level-avg" class="level-label avg">Avg 😊</label>
+                        <input type="radio" id="level-min" name="brag-level" value="min">
+                        <label for="level-min" class="level-label min">Min 👍</label>
+                    </div>
+                    <button type="submit">Add Brag</button>
+                </form>
+
+                <div class="year-only-brag">
+                    <h3>Or add a brag for the year:</h3>
+                     <form id="add-year-brag-form">
+                         <input type="number" id="brag-year" placeholder="Year (e.g., 2024)" required>
+                         <textarea id="year-brag-text" placeholder="General win for the year..." required></textarea>
+                         <div class="brag-level">
+                             <label>Level:</label>
+                             <input type="radio" id="year-level-max" name="year-brag-level" value="max" required>
+                             <label for="year-level-max" class="level-label max">Max ✨</label>
+                             <input type="radio" id="year-level-avg" name="year-brag-level" value="avg" checked>
+                             <label for="year-level-avg" class="level-label avg">Avg 😊</label>
+                             <input type="radio" id="year-level-min" name="year-brag-level" value="min">
+                             <label for="year-level-min" class="level-label min">Min 👍</label>
+                         </div>
+                         <button type="submit">Add Year Brag</button>
+                     </form>
+                </div>
+            </div>
+        </main>
+
+        <section id="analytics-view" class="view">
+            <h2>Analytics</h2>
+             <div class="analytics-controls">
+                <label for="analytics-year">Select Year:</label>
+                <input type="number" id="analytics-year" placeholder="e.g., 2024">
+                <button id="load-analytics">Load</button>
+            </div>
+            <div id="analytics-content">
+                <p>Select a year and click Load to see your brags.</p>
+            </div>
+             <div class="brag-summary">
+                 <h3>Summary</h3>
+                 <p>Max: <span id="summary-max">0</span></p>
+                 <p>Avg: <span id="summary-avg">0</span></p>
+                 <p>Min: <span id="summary-min">0</span></p>
+                 <p>Total: <span id="summary-total">0</span></p>
+             </div>
+        </section>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

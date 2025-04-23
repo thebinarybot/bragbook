@@ -1,0 +1,497 @@
+/* --- Base & Variables --- */
+:root {
+    --font-family: 'Inter', sans-serif;
+
+    /* Light Theme */
+    --bg-color: #f4f7f6;
+    --primary-text-color: #1a1a1a;
+    --secondary-text-color: #555;
+    --accent-color: #4a90e2; /* A nice blue */
+    --accent-hover-color: #3a7bc8;
+    --container-bg: #ffffff;
+    --border-color: #e0e0e0;
+    --shadow-color: rgba(0, 0, 0, 0.05);
+    --calendar-day-hover: #e8f0fe;
+    --calendar-selected-bg: #4a90e2;
+    --calendar-selected-text: #ffffff;
+    --calendar-today-border: #4a90e2;
+    --calendar-brag-dot: #ff6b6b; /* Red dot for brags */
+    --level-max-bg: #ffd700; /* Gold */
+    --level-avg-bg: #90ee90; /* Light Green */
+    --level-min-bg: #add8e6; /* Light Blue */
+    --input-bg: #f0f0f0;
+
+    /* Transitions */
+    --transition-speed: 0.3s;
+}
+
+body.dark-theme {
+    /* Dark Theme */
+    --bg-color: #1a1d21;
+    --primary-text-color: #e1e1e1;
+    --secondary-text-color: #aaaaaa;
+    --accent-color: #58a6ff; /* Lighter blue for dark mode */
+    --accent-hover-color: #4d8bde;
+    --container-bg: #252a30;
+    --border-color: #3a4048;
+    --shadow-color: rgba(0, 0, 0, 0.2);
+    --calendar-day-hover: #3a4048;
+    --calendar-selected-bg: #58a6ff;
+    --calendar-selected-text: #1a1d21;
+    --calendar-today-border: #58a6ff;
+    --calendar-brag-dot: #ff8787; /* Lighter red */
+    --level-max-bg: #e6c300;
+    --level-avg-bg: #68b368;
+    --level-min-bg: #84b5cb;
+    --input-bg: #3a4048;
+}
+
+/* --- General Styles --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-color);
+    color: var(--primary-text-color);
+    line-height: 1.6;
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+.app-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 1rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+h1, h2, h3 {
+    color: var(--primary-text-color);
+    margin-bottom: 0.5em;
+    font-weight: 600;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 1.8rem; }
+h3 { font-size: 1.4rem; }
+
+button, input[type="radio"] + label {
+    cursor: pointer;
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease, border-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+}
+
+button:active, input[type="radio"] + label:active {
+     transform: scale(0.97);
+}
+
+textarea, input[type="number"] {
+    font-family: var(--font-family);
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--input-bg);
+    color: var(--primary-text-color);
+    width: 100%;
+    margin-bottom: 1rem;
+    transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+button {
+    padding: 0.7rem 1.5rem;
+    border: none;
+    border-radius: 20px; /* Pill shape */
+    background-color: var(--accent-color);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+button:hover {
+    background-color: var(--accent-hover-color);
+}
+
+/* --- Header --- */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.app-header h1 {
+    margin: 0;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent-color), var(--level-max-bg));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+}
+
+.app-header .controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+#theme-toggle {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--primary-text-color);
+    font-size: 1.5rem; /* Make emoji bigger */
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    line-height: 1;
+    width: 50px; /* Fixed width */
+    text-align: center;
+}
+#theme-toggle:hover {
+     background-color: var(--input-bg);
+}
+
+/* --- View Switching --- */
+.view {
+    display: none; /* Hide views by default */
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.view.active {
+    display: block; /* Show active view */
+    opacity: 1;
+}
+
+/* --- Main View Layout --- */
+#main-view {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr; /* Calendar takes more space */
+    gap: 2rem;
+    align-items: start; /* Align items to the top */
+}
+
+@media (max-width: 900px) {
+    #main-view {
+        grid-template-columns: 1fr; /* Stack on smaller screens */
+    }
+    .calendar-container {
+        order: 1; /* Calendar first */
+    }
+    .add-brag-container {
+        order: 2; /* Then brag input */
+    }
+}
+
+
+/* --- Calendar --- */
+.calendar-container {
+    background-color: var(--container-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    transition: background-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.calendar-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.calendar-header button {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--primary-text-color);
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    font-size: 1.2rem;
+    line-height: 1;
+    padding: 0;
+}
+.calendar-header button:hover {
+    background-color: var(--input-bg);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.calendar-day, .calendar-weekday {
+    text-align: center;
+    padding: 0.8rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    position: relative; /* For brag dot */
+}
+
+.calendar-weekday {
+    font-weight: 600;
+    color: var(--secondary-text-color);
+    padding-bottom: 0.5rem;
+}
+
+.calendar-day {
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.calendar-day:not(.empty):hover {
+    background-color: var(--calendar-day-hover);
+}
+
+.calendar-day.selected {
+    background-color: var(--calendar-selected-bg);
+    color: var(--calendar-selected-text);
+    font-weight: 600;
+}
+
+.calendar-day.today {
+    border: 2px solid var(--calendar-today-border);
+    font-weight: bold;
+}
+
+.calendar-day.empty {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.calendar-day .brag-indicator {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    background-color: var(--calendar-brag-dot);
+    border-radius: 50%;
+}
+
+
+/* --- Add Brag Section --- */
+.add-brag-container {
+    background-color: var(--container-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    transition: background-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+}
+
+.add-brag-container h2, .add-brag-container h3 {
+     margin-bottom: 1rem;
+}
+.add-brag-container p {
+    margin-bottom: 1rem;
+    color: var(--secondary-text-color);
+}
+.add-brag-container strong {
+    color: var(--primary-text-color);
+    font-weight: 600;
+}
+
+#add-brag-form button, #add-year-brag-form button {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.brag-level {
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap; /* Allow wrapping */
+}
+.brag-level > label { /* The main "Level:" label */
+    margin-right: 0.5rem;
+    font-weight: 600;
+}
+
+/* Hide actual radio buttons */
+.brag-level input[type="radio"] {
+    opacity: 0;
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+/* Style labels as buttons */
+.brag-level .level-label {
+    padding: 0.5rem 1rem;
+    border-radius: 15px;
+    border: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    transition: all var(--transition-speed) ease;
+}
+
+.brag-level .level-label.max { background-color: var(--level-max-bg); color: #333;}
+.brag-level .level-label.avg { background-color: var(--level-avg-bg); color: #333;}
+.brag-level .level-label.min { background-color: var(--level-min-bg); color: #333;}
+
+/* Style for selected radio button's label */
+.brag-level input[type="radio"]:checked + .level-label {
+    transform: scale(1.05);
+    box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    font-weight: bold;
+    border-color: var(--primary-text-color); /* Add distinct border */
+}
+
+.year-only-brag {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed var(--border-color);
+}
+
+/* --- Analytics View --- */
+#analytics-view {
+    background-color: var(--container-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    transition: background-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+}
+
+.analytics-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+.analytics-controls label {
+     font-weight: 600;
+}
+.analytics-controls input[type="number"] {
+     width: 120px; /* Smaller width for year input */
+     margin-bottom: 0;
+}
+
+#analytics-content {
+    margin-top: 1rem;
+}
+
+.brag-category {
+    margin-bottom: 2rem;
+    padding-left: 1.5rem; /* Indent categories */
+    border-left: 3px solid; /* Category color indicator */
+}
+
+.brag-category h3 {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.brag-category.max { border-left-color: var(--level-max-bg); }
+.brag-category.avg { border-left-color: var(--level-avg-bg); }
+.brag-category.min { border-left-color: var(--level-min-bg); }
+
+.brag-category h3 .icon {
+    font-size: 1.2em;
+}
+
+.brag-item {
+    background-color: var(--bg-color); /* Slightly different background */
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: background-color var(--transition-speed) ease;
+    position: relative; /* For delete button */
+}
+
+.brag-item .date {
+    font-size: 0.85rem;
+    color: var(--secondary-text-color);
+    margin-bottom: 0.5rem;
+    display: block; /* Ensure it's on its own line */
+}
+
+.brag-item p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.brag-item .delete-brag {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    color: var(--secondary-text-color);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+.brag-item:hover .delete-brag {
+    opacity: 1;
+}
+.delete-brag:hover {
+    color: #ff6b6b; /* Red on hover */
+}
+
+.no-brags {
+    color: var(--secondary-text-color);
+    font-style: italic;
+}
+
+.brag-summary {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border-color);
+}
+.brag-summary h3 {
+    margin-bottom: 0.5rem;
+}
+.brag-summary p {
+    margin-bottom: 0.2rem;
+    font-size: 1rem;
+}
+.brag-summary span {
+    font-weight: bold;
+    color: var(--accent-color);
+}
+
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 600px) {
+    .app-container {
+        padding: 1rem;
+        margin: 1rem auto;
+    }
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    .app-header { flex-direction: column; gap: 0.5rem; align-items: flex-start;}
+    .app-header .controls { margin-top: 0.5rem; width: 100%; justify-content: space-between; }
+    .calendar-grid { gap: 2px; }
+    .calendar-day, .calendar-weekday { padding: 0.5rem 0.2rem; font-size: 0.8rem; }
+    .brag-level { flex-direction: column; align-items: flex-start; }
+    .brag-level .level-label { width: 100%; text-align: center; margin-bottom: 0.5rem;}
+    .analytics-controls { flex-direction: column; align-items: stretch; }
+    .analytics-controls input[type="number"] { width: 100%; }
+    .brag-category { padding-left: 1rem; }
+    #theme-toggle { padding: 0.1rem 0.4rem; }
+}
