@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brag Book ✨</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icons/favicon4.jpg" type="image/png">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,32 +22,40 @@
         </header>
 
         <main id="main-view" class="view active">
-            <div class="calendar-container">
-                <div class="calendar-header">
-                    <button id="prev-month">&lt;</button>
-                    <h2 id="month-year">Month Year</h2>
-                    <button id="next-month">&gt;</button>
-                </div>
-                <div class="calendar-grid" id="calendar-grid">
+            <div class="calendar-and-daily-brags">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button id="prev-month">&lt;</button>
+                        <h2 id="month-year">Month Year</h2>
+                        <button id="next-month">&gt;</button>
                     </div>
-            </div>
+                    <div class="calendar-grid" id="calendar-grid">
+                        </div>
+                </div>
 
-            <div class="add-brag-container">
-                <h2>Add a Brag</h2>
-                <form id="add-brag-form">
+                <div id="daily-brags-container" class="card daily-brags-card" style="display: none;">
+                    <h3 id="daily-brags-heading">Brags for Selected Date</h3>
+                    <div id="daily-brags-list"></div>
+               </div>
+
+            </div> <div class="add-brag-container">
+                <h2>Add a Brag</h2> <form id="add-brag-form">
                     <input type="hidden" id="brag-date" value="">
+                    <input type="hidden" id="editing-brag-id" value="">
+        
                     <p>For: <strong id="selected-date-display">Today</strong></p>
                     <textarea id="brag-text" placeholder="What awesome thing happened?" required></textarea>
                     <div class="brag-level">
                         <label>Level:</label>
-                        <input type="radio" id="level-max" name="brag-level" value="max" required>
+                         <input type="radio" id="level-max" name="brag-level" value="max" required>
                         <label for="level-max" class="level-label max">Max ✨</label>
                         <input type="radio" id="level-avg" name="brag-level" value="avg" checked>
                         <label for="level-avg" class="level-label avg">Avg 😊</label>
                         <input type="radio" id="level-min" name="brag-level" value="min">
                         <label for="level-min" class="level-label min">Min 👍</label>
                     </div>
-                    <button type="submit">Add Brag</button>
+                    <button type="submit" id="submit-brag-button">Add Brag</button>
+                    <button type="button" id="cancel-edit-button" class="secondary-button" style="display: none;">Cancel Edit</button>
                 </form>
 
                 <div class="year-only-brag">

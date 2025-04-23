@@ -23,6 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const summaryMin = document.getElementById('summary-min');
     const summaryTotal = document.getElementById('summary-total');
 
+    const dailyBragsContainer = document.getElementById('daily-brags-container');
+    const dailyBragsHeading = document.getElementById('daily-brags-heading');
+    const dailyBragsList = document.getElementById('daily-brags-list');
+    const editingBragIdInput = document.getElementById('editing-brag-id');
+    const submitBragButton = document.getElementById('submit-brag-button');
+    const cancelEditButton = document.getElementById('cancel-edit-button');
 
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
@@ -136,21 +142,87 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    
+    // --- Render Daily Brags ---
+    const renderDailyBrags = (dateStr) => {
+        if (!dateStr) {
+            dailyBragsContainer.style.display = 'none';
+            return;
+        }
+
+        const bragsForDate = brags.filter(brag => brag.date === dateStr);
+        dailyBragsList.innerHTML = ''; // Clear previous list
+
+        if (bragsForDate.length > 0) {
+            const dateObj = new Date(dateStr + 'T00:00:00');
+            dailyBragsHeading.textContent = `Brags for ${dateObj.toLocaleDateString('default', { month: 'long', day: 'numeric' })}`;
+
+            bragsForDate.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Show newest first
+
+            bragsForDate.forEach(brag => {
+                const bragItem = document.createElement('div');
+                bragItem.classList.add('daily-brag-item', brag.level); // Add level class for border
+
+                const textP = document.createElement('p');
+                textP.textContent = brag.text;
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.classList.add('brag-actions');
+
+                // Edit Button
+                const editBtn = document.createElement('button');
+                editBtn.innerHTML = '✏️'; // Pencil emoji
+                editBtn.title = 'Edit this brag';
+                editBtn.classList.add('action-button', 'edit-brag');
+                editBtn.onclick = () => startEditingBrag(brag.id);
+
+                // Delete Button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '&times;'; // Cross emoji
+                deleteBtn.title = 'Delete this brag';
+                deleteBtn.classList.add('action-button', 'delete-brag');
+                deleteBtn.onclick = () => {
+                     if (confirm('Are you sure you want to delete this brag?')) {
+                        deleteBrag(brag.id);
+                     }
+                };
+
+
+                actionsDiv.appendChild(editBtn);
+                actionsDiv.appendChild(deleteBtn);
+
+                bragItem.appendChild(textP);
+                bragItem.appendChild(actionsDiv);
+                dailyBragsList.appendChild(bragItem);
+            });
+
+            dailyBragsContainer.style.display = 'block'; // Show the card
+        } else {
+            dailyBragsContainer.style.display = 'none'; // Hide the card if no brags
+        }
+    };
     const selectDate = (dateStr) => {
         selectedDate = dateStr;
-        bragDateInput.value = dateStr; // Update hidden input for the form
-        const dateObj = new Date(dateStr + 'T00:00:00'); // Ensure correct date parsing
+        bragDateInput.value = dateStr;
+        const dateObj = new Date(dateStr + 'T00:00:00');
         selectedDateDisplay.textContent = dateObj.toLocaleDateString('default', { year: 'numeric', month: 'long', day: 'numeric' });
-        // Re-render to show selection highlight
-        renderCalendar(currentMonth, currentYear);
-        // Optionally clear the year-only form when a date is selected
+
+        renderCalendar(currentMonth, currentYear); // Re-render calendar for selection highlight/dots
+        renderDailyBrags(dateStr); // Render the brags for the newly selected date
+
+        // If user was editing, cancel edit when changing date
+        if (editingBragIdInput.value) {
+            cancelEditing();
+        }
+        // Clear year-only form as well
         addYearBragForm.reset();
     };
 
-    // --- Brag Handling ---
+    // --- Brag Handling (Modified) ---
     const saveBrags = () => {
         localStorage.setItem('brags', JSON.stringify(brags));
     };
+
 
     const addBrag = (bragData) => {
         const newBrag = {
@@ -169,32 +241,85 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Event listener for date-specific brag form
+
+    // --- Modify Form Submission Logic ---
     addBragForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        if (!selectedDate) {
-            alert("Please select a date on the calendar first!");
-            return;
-        }
+        const editingId = editingBragIdInput.value;
         const text = bragTextInput.value.trim();
         const level = document.querySelector('input[name="brag-level"]:checked').value;
+        const date = bragDateInput.value; // Use the hidden date input
+
+        if (!date) {
+             alert("No date selected for the brag."); // Should not happen if selectDate works
+             return;
+        }
 
         if (text && level) {
-            addBrag({ date: selectedDate, year: parseInt(selectedDate.substring(0, 4)), text, level });
-            // Optional: Give user feedback (e.g., a subtle animation or message)
+            if (editingId) {
+                // --- UPDATE existing brag ---
+                const bragIndex = brags.findIndex(b => b.id === editingId);
+                if (bragIndex > -1) {
+                    brags[bragIndex].text = text;
+                    brags[bragIndex].level = level;
+                    // Date typically doesn't change during edit, but could be added if needed
+                    brags[bragIndex].timestamp = new Date().toISOString(); // Update timestamp
+                    saveBrags();
+                    renderDailyBrags(date); // Re-render the daily list for this date
+                    cancelEditing(); // Reset form state
+                    renderCalendar(currentMonth, currentYear); // Update calendar dot
+                } else {
+                    console.error("Brag ID not found for editing:", editingId);
+                    cancelEditing(); // Reset form anyway
+                }
+            } else {
+                // --- ADD new brag ---
+                const newBrag = {
+                    id: Date.now().toString(),
+                    timestamp: new Date().toISOString(),
+                    date: date,
+                    year: parseInt(date.substring(0, 4)),
+                    text,
+                    level
+                };
+                brags.push(newBrag);
+                saveBrags();
+                renderCalendar(currentMonth, currentYear); // Update calendar dot
+                renderDailyBrags(date); // Show the new brag in the daily list
+                addBragForm.reset(); // Clear form for next entry
+                // Ensure date selection display remains correct after reset
+                 const dateObj = new Date(date + 'T00:00:00');
+                 selectedDateDisplay.textContent = dateObj.toLocaleDateString('default', { year: 'numeric', month: 'long', day: 'numeric' });
+                 bragDateInput.value = date;
+
+            }
         }
     });
 
-    // Event listener for year-only brag form
     addYearBragForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        // Cancel date-specific editing if active
+        if (editingBragIdInput.value) {
+            cancelEditing();
+        }
+
         const year = parseInt(bragYearInput.value);
         const text = yearBragTextInput.value.trim();
         const level = document.querySelector('input[name="year-brag-level"]:checked').value;
 
-        if (year && text && level && year > 1900 && year < 2200) { // Basic year validation
-            addBrag({ date: null, year: year, text, level });
-            addYearBragForm.reset(); // Reset this specific form
-            // Optional: Give user feedback
+        if (year && text && level && year > 1900 && year < 2200) {
+            const newBrag = {
+                 id: Date.now().toString(),
+                 timestamp: new Date().toISOString(),
+                 date: null, // Explicitly null for year-only
+                 year: year,
+                 text,
+                 level
+             };
+             brags.push(newBrag);
+             saveBrags();
+            addYearBragForm.reset();
+            // Optionally give user feedback
         } else {
             alert("Please enter a valid year and brag text.");
         }
@@ -202,17 +327,72 @@ document.addEventListener('DOMContentLoaded', () => {
 
      // Function to delete a brag
     const deleteBrag = (id) => {
+        const bragIndex = brags.findIndex(brag => brag.id === id);
+        if (bragIndex === -1) return;
+
+        const deletedBragDate = brags[bragIndex].date; // Get date before deleting
+
         brags = brags.filter(brag => brag.id !== id);
         saveBrags();
-        // Refresh the current view (either calendar or analytics)
+
+        // Refresh the necessary views
         if (mainView.classList.contains('active')) {
-            renderCalendar(currentMonth, currentYear);
-        } else {
-            loadAnalytics(); // Reload analytics for the current year
+            renderCalendar(currentMonth, currentYear); // Update dot indicator
+            // Re-render daily brags ONLY if the deleted brag was for the currently selected date
+            if (deletedBragDate === selectedDate) {
+                renderDailyBrags(selectedDate);
+            }
+        }
+        if (analyticsView.classList.contains('active')) {
+            loadAnalytics(); // Reload analytics if it's visible
         }
     };
 
+    
+    // --- Editing Logic ---
+    const startEditingBrag = (id) => {
+        const bragToEdit = brags.find(brag => brag.id === id);
+        if (!bragToEdit) return;
 
+        // Ensure the correct date is selected in the calendar UI first
+        if(bragToEdit.date !== selectedDate) {
+            selectDate(bragToEdit.date); // Select the date if not already selected
+        }
+
+        // Populate the main form
+        bragTextInput.value = bragToEdit.text;
+        bragDateInput.value = bragToEdit.date; // Should match selectedDate now
+        document.querySelector(`input[name="brag-level"][value="${bragToEdit.level}"]`).checked = true;
+        editingBragIdInput.value = id; // Set the hidden ID
+
+        // Update button text and show cancel button
+        submitBragButton.textContent = 'Update Brag';
+        cancelEditButton.style.display = 'inline-block'; // Show cancel button
+
+        // Scroll form into view
+        addBragForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        bragTextInput.focus(); // Focus the text area
+    };
+
+    
+    const cancelEditing = () => {
+        editingBragIdInput.value = ''; // Clear the editing ID
+        addBragForm.reset(); // Reset form fields
+        submitBragButton.textContent = 'Add Brag'; // Reset button text
+        cancelEditButton.style.display = 'none'; // Hide cancel button
+
+        // Ensure selected date display is correct after reset
+        if(selectedDate) {
+             const dateObj = new Date(selectedDate + 'T00:00:00');
+             selectedDateDisplay.textContent = dateObj.toLocaleDateString('default', { year: 'numeric', month: 'long', day: 'numeric' });
+             bragDateInput.value = selectedDate;
+        } else {
+             selectedDateDisplay.textContent = 'Select a date';
+        }
+    };
+
+    // Add event listener for the cancel button
+    cancelEditButton.addEventListener('click', cancelEditing);
     // --- Analytics Logic ---
     const loadAnalytics = () => {
         const year = parseInt(analyticsYearInput.value);
@@ -320,12 +500,16 @@ document.addEventListener('DOMContentLoaded', () => {
         debounceTimer = setTimeout(loadAnalytics, 500); // Load 500ms after user stops typing
     });
 
-
-    // --- Initial Load ---
+    // --- Initial Load Modifications ---
+    // Select today's date and render its brags on load
     const todayForSelection = new Date();
     const todayStrForSelection = `${todayForSelection.getFullYear()}-${String(todayForSelection.getMonth() + 1).padStart(2, '0')}-${String(todayForSelection.getDate()).padStart(2, '0')}`;
-    selectDate(todayStrForSelection); // Select today's date by default
-    renderCalendar(currentMonth, currentYear);
+    selectDate(todayStrForSelection); // This now also calls renderDailyBrags
+    // --- Initial Load ---
+    // const todayForSelection = new Date();
+    // const todayStrForSelection = `${todayForSelection.getFullYear()}-${String(todayForSelection.getMonth() + 1).padStart(2, '0')}-${String(todayForSelection.getDate()).padStart(2, '0')}`;
+    // selectDate(todayStrForSelection); // Select today's date by default
+    // renderCalendar(currentMonth, currentYear);
     analyticsYearInput.value = currentYear; // Set default analytics year
 
     // Calendar navigation

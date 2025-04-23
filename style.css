@@ -182,18 +182,130 @@ button:hover {
     align-items: start; /* Align items to the top */
 }
 
+/* Wrapper for Calendar and Daily Brags */
+.calendar-and-daily-brags {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; /* Space between calendar and daily brags */
+}
+
 @media (max-width: 900px) {
     #main-view {
         grid-template-columns: 1fr; /* Stack on smaller screens */
     }
-    .calendar-container {
-        order: 1; /* Calendar first */
+    /* Calendar+Daily wrapper first */
+    .calendar-and-daily-brags {
+        order: 1;
     }
     .add-brag-container {
         order: 2; /* Then brag input */
     }
 }
 
+/* --- Daily Brags Card --- */
+.daily-brags-card {
+    background-color: var(--container-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    transition: background-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+    /* display: none; is set inline initially, controlled by JS */
+}
+
+.daily-brags-card h3 {
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+
+#daily-brags-list {
+    max-height: 300px; /* Optional: Limit height and add scroll */
+    overflow-y: auto;
+    padding-right: 5px; /* Space for scrollbar */
+}
+
+/* Style individual items like analytics */
+.daily-brag-item {
+    background-color: var(--bg-color);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    border-left: 5px solid; /* Level indicator */
+    transition: background-color var(--transition-speed) ease;
+    position: relative;
+    padding-right: 60px; /* Space for buttons */
+}
+
+.daily-brag-item.max { border-left-color: var(--level-max-bg); }
+.daily-brag-item.avg { border-left-color: var(--level-avg-bg); }
+.daily-brag-item.min { border-left-color: var(--level-min-bg); }
+
+
+.daily-brag-item p {
+    margin: 0;
+    line-height: 1.5;
+    word-wrap: break-word; /* Prevent long text overflow */
+}
+
+.daily-brag-item .brag-actions {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 5px;
+}
+
+.daily-brag-item .action-button {
+    background: none;
+    border: none;
+    color: var(--secondary-text-color);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+    opacity: 0.6;
+    transition: opacity 0.2s ease, color 0.2s ease;
+    line-height: 1; /* Align icons better */
+}
+.daily-brag-item:hover .action-button {
+     opacity: 1;
+}
+.daily-brag-item .action-button.edit-brag:hover {
+     color: var(--accent-color); /* Blue for edit */
+}
+.daily-brag-item .action-button.delete-brag:hover {
+    color: #ff6b6b; /* Red for delete */
+}
+
+/* Cancel Edit Button Style */
+#add-brag-form {
+    position: relative; /* Needed if cancel button is absolute positioned */
+    /* Or use flex/grid layout for buttons */
+    display: flex;
+    flex-direction: column; /* Keep form elements stacked */
+}
+
+/* Style the buttons container if needed, or just style the button */
+#cancel-edit-button {
+    margin-top: 0.5rem; /* Space above cancel button */
+    background-color: transparent;
+    color: var(--secondary-text-color);
+    border: 1px solid var(--border-color);
+}
+#cancel-edit-button:hover {
+     background-color: var(--input-bg);
+     border-color: var(--secondary-text-color);
+}
+
+/* Ensure submit and cancel sit nicely */
+#submit-brag-button {
+    order: 1; /* Ensure submit comes first visually if needed */
+}
+#cancel-edit-button {
+     order: 2;
+}
 
 /* --- Calendar --- */
 .calendar-container {
