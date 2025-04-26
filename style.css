@@ -164,13 +164,13 @@ button:hover {
 
 /* --- View Switching --- */
 .view {
-    display: none; /* Hide views by default */
+    /*display: none;*/ /* Hide views by default */
     opacity: 0;
     transition: opacity 0.5s ease-in-out;
 }
 
 .view.active {
-    display: block; /* Show active view */
+    /*display: block;*/ /* Show active view */
     opacity: 1;
 }
 
@@ -497,6 +497,18 @@ button:hover {
      width: 120px; /* Smaller width for year input */
      margin-bottom: 0;
 }
+.analytics-controls input[type="search"] {
+    flex-grow: 1; 
+    min-width: 150px; 
+    padding: 0.8rem 1rem; /* Match other inputs */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--input-bg);
+    color: var(--primary-text-color);
+    font-family: var(--font-family);
+    margin-bottom: 0;  q q
+    transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
+}
 
 #analytics-content {
     margin-top: 1rem;
@@ -587,6 +599,9 @@ button:hover {
     color: var(--accent-color);
 }
 
+.hide {
+    display: none !important;
+}
 
 /* --- Responsive Adjustments --- */
 @media (max-width: 600px) {
